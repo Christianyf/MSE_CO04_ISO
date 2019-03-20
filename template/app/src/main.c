@@ -43,6 +43,8 @@
 
 /*==================[macros and definitions]=================================*/
 #define STACK_SIZE 512
+#define DELAY_T1 500
+#define DELAY_T2 250
 
 typedef  unsigned long int uint32_t;
 typedef unsigned char uint8_t;
@@ -56,6 +58,9 @@ uint32_t stack2[STACK_SIZE/4];
 
 uint32_t sp1,sp2;
 uint32_t current_task=0;
+
+static uint32_t delay_t1=DELAY_T1;
+static uint32_t delay_t2=DELAY_T2;
 /*==================[internal functions declaration]=========================*/
 
 //static void initHardware(void);
@@ -65,7 +70,13 @@ uint32_t current_task=0;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
+ uint32_t delay_mine(uint32_t t)
+{
+	 for(uint32_t i=0;i==t;i++){
 
+	 }
+	 return 1;
+}
 static void initHardware(void)
 {
 	Board_Init();
@@ -82,12 +93,26 @@ void task_return_hook(void * ret_val){
 
 void * task1(void *arg){
 	while(1){
+		if(delay_t1>0){
+			delay_t1--;
+		}
+		if(delay_t1==0){
+			delay_t1=DELAY_T1;
+			Board_LED_Toggle(LED_2);
+		}
 		__WFI();
 	}
 	return NULL;
 }
 void * task2(void *arg){
 	while(1){
+		if(delay_t2>0){
+			delay_t2--;
+		}
+		if(delay_t2==0){
+			delay_t2=DELAY_T2;
+			Board_LED_Toggle(LED_1);
+		}
 		__WFI();
 	}
 	return NULL;
