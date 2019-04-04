@@ -56,6 +56,7 @@ typedef struct{
 	uint32_t sp;
 	uint32_t prioridad;
 	state estado;
+	uint32_t contador;
 }data_tarea;
 /*==================[internal data declaration]==============================*/
 
@@ -70,11 +71,9 @@ uint32_t sp1,sp2,sp3;
 uint32_t current_task=0;
 
 uint32_t indice_inicio=0,indice_final=0,libre;
-uint32_t indice=0;
+uint32_t indice=0, ID_tarea_running;
 
 /*==================[internal functions declaration]=========================*/
-
-//static void initHardware(void);
 
 /*==================[internal data definition]===============================*/
 
@@ -95,14 +94,41 @@ void task_return_hook(void * ret_val){
 
 }
 
+
+void schedule(void){
+	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+	__ISB();
+	__DSB();
+}
+
+void SysTick_Handler(void){
+	schedule();
+}
+
+void t_delay(uint32_t tiempo){
+	vector_tareas[ID_tarea_running].contador=tiempo;
+	vector_tareas[ID_tarea_running].estado=blocked;
+	schedule();//llama al cambio de contexto
+}
+void actualizar_cuenta(void){
+	uint32_t i;
+	for(i=1;i<NTAREAS+1;i++){
+		if(vector_tareas[i].contador>0){
+			vector_tareas[i].contador--;
+		}else{
+			vector_tareas[i].contador=0;//para asegurar un valor positivo en el contador
+		}
+	}
+}
+
 void * task1(void *arg){
 	uint32_t i;
 
 	while(1){
-
-		for(i=0;i<DELAY_T1;i++){
-
-		}
+		t_delay(500);
+		//for(i=0;i<DELAY_T1;i++){
+			//delay por software basico
+		//}
 		Board_LED_Toggle(LED_1);
 	}
 	return NULL;
@@ -111,14 +137,16 @@ void * task2(void *arg){
 	uint32_t i;
 
 	while(1){
-
-		for(i=0;i<DELAY_T2;i++){
-
-		}
+		t_delay(50);
+		//for(i=0;i<DELAY_T2;i++){
+			//delay por software basico
+		//}
 		Board_LED_Toggle(LED_2);
 	}
 	return NULL;
 }
+//Tarea 3 es mi tarea idle (nunca bloquear)
+
 void * task3(void *arg){
 	while(1){
 		uint32_t i;
@@ -141,6 +169,9 @@ void MEF_tareas(uint32_t indi){
 	case blocked:
 		//revisar la condicion de bloqueo y luego...
 		//vector_tareas[indi].estado=ready;
+		if (vector_tareas[indi].contador==0){
+			vector_tareas[indi].estado=ready;
+		}
 		break;
 	default:
 		break;
@@ -168,6 +199,9 @@ void init_stack(
 uint32_t get_next_context(uint32_t current_sp){
 
 	uint32_t next_sp;
+
+	actualizar_cuenta();
+
 	libre=0;
 	indice_inicio=indice_final;
 
@@ -182,26 +216,20 @@ uint32_t get_next_context(uint32_t current_sp){
 		if(vector_tareas[indice].estado==ready){
 			indice_final=indice;
 			libre=1;
-		}
+		}else if(vector_tareas[indice].estado==blocked){
+			MEF_tareas(indice);
+		}//cambiar las condiciones if por elseif
 	}
 	vector_tareas[indice_inicio].sp=current_sp;
 	next_sp=vector_tareas[indice_final].sp;
 
 	MEF_tareas(indice);
+	ID_tarea_running=indice;
 
 	return next_sp;
 }
 
 
-void schedule(void){
-	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-	__ISB();
-	__DSB();
-}
-
-void SysTick_Handler(void){
-	schedule();
-}
 
 /*==================[external functions definition]==========================*/
 
