@@ -35,32 +35,43 @@
 
 #include "main.h"
 #include "board.h"
-//#include "suma.h"
-//#include "asm.h"
 #include <strings.h>
 
 
 
 /*==================[macros and definitions]=================================*/
 #define STACK_SIZE 512
-#define DELAY_T1 500
-#define DELAY_T2 250
+#define DELAY_T1 0x500000
+#define DELAY_T2 0x120000
+#define NTAREAS 2
 
 typedef  unsigned long int uint32_t;
 typedef unsigned char uint8_t;
 typedef void *(*task_type)(void *);//puntero a función que devuelve un puntero y recibe
 								   //de parametro un puntero
+
+typedef enum state_task{ready,running,blocked}state;
+typedef struct{
+	uint32_t tamano;
+	uint32_t sp;
+	uint32_t prioridad;
+	state estado;
+}data_tarea;
 /*==================[internal data declaration]==============================*/
-uint32_t pausems_count;
 
 uint32_t stack1[STACK_SIZE/4];
 uint32_t stack2[STACK_SIZE/4];
+uint32_t stack3[STACK_SIZE/4];
 
-uint32_t sp1,sp2;
+data_tarea vector_tareas[4];
+
+uint32_t sp1,sp2,sp3;
+
 uint32_t current_task=0;
 
-static uint32_t delay_t1=DELAY_T1;
-static uint32_t delay_t2=DELAY_T2;
+uint32_t indice_inicio=0,indice_final=0,libre;
+uint32_t indice=0;
+
 /*==================[internal functions declaration]=========================*/
 
 //static void initHardware(void);
@@ -70,19 +81,12 @@ static uint32_t delay_t2=DELAY_T2;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
- uint32_t delay_mine(uint32_t t)
-{
-	 for(uint32_t i=0;i==t;i++){
 
-	 }
-	 return 1;
-}
 static void initHardware(void)
 {
 	Board_Init();
 	SystemCoreClockUpdate();
 	SysTick_Config(SystemCoreClock / 1000);
-	//SysTick_Config(10);
 }
 void task_return_hook(void * ret_val){
 	while(1){
@@ -92,30 +96,56 @@ void task_return_hook(void * ret_val){
 }
 
 void * task1(void *arg){
+	uint32_t i;
+
 	while(1){
-		if(delay_t1>0){
-			delay_t1--;
+
+		for(i=0;i<DELAY_T1;i++){
+
 		}
-		if(delay_t1==0){
-			delay_t1=DELAY_T1;
-			Board_LED_Toggle(LED_2);
-		}
-		__WFI();
+		Board_LED_Toggle(LED_1);
 	}
 	return NULL;
 }
 void * task2(void *arg){
+	uint32_t i;
+
 	while(1){
-		if(delay_t2>0){
-			delay_t2--;
+
+		for(i=0;i<DELAY_T2;i++){
+
 		}
-		if(delay_t2==0){
-			delay_t2=DELAY_T2;
-			Board_LED_Toggle(LED_1);
-		}
-		__WFI();
+		Board_LED_Toggle(LED_2);
 	}
 	return NULL;
+}
+void * task3(void *arg){
+	while(1){
+		uint32_t i;
+		for(i=0;i<DELAY_T2;i++){
+
+		}
+		Board_LED_Toggle(LED_3);
+	}
+	return NULL;
+}
+
+void MEF_tareas(uint32_t indi){
+	switch(vector_tareas[indi].estado){
+	case ready:
+		vector_tareas[indi].estado=running;
+		break;
+	case running:
+		vector_tareas[indi].estado=ready;
+		break;
+	case blocked:
+		//revisar la condicion de bloqueo y luego...
+		//vector_tareas[indi].estado=ready;
+		break;
+	default:
+		break;
+	}
+
 }
 
 void init_stack(
@@ -132,49 +162,66 @@ void init_stack(
 	stack[stack_size/4-8]=(uint32_t)arg;				//R0, se apunta a R0
 	stack[stack_size/4-9]=0xFFFFFFF9;					//LR IRQ
 
-	*sp=(uint32_t)&(stack[stack_size/4-17]);//se apunta(guarda) a 8 registros mas luego de R0
-	//*sp=&(stack[stack_size/4-17]);
+	*sp=(uint32_t)&(stack[stack_size/4-17]);			//se apunta(guarda) a 8 registros mas luego de R0
 }
 
 uint32_t get_next_context(uint32_t current_sp){
 
 	uint32_t next_sp;
+	libre=0;
+	indice_inicio=indice_final;
 
-	switch(current_task){
-	case 0:
-		//contexto inicial
-		next_sp=sp1;
-		current_task=1;
-		break;
-	case 1:
-		//contexto tarea 1
-		sp1=current_sp;
-		next_sp=sp2;
-		current_task=2;
-		break;
-	case 2:
-		//contexto tarea 2
-		sp2=current_sp;
-		next_sp=sp1;
-		current_task=1;
-		break;
-	default:
-		while(1){
-			__WFI();
+	MEF_tareas(indice);
+
+	while(libre==0){
+		if(indice<NTAREAS+1){
+			indice++;
+		}else{
+			indice=1;
 		}
-		break;
+		if(vector_tareas[indice].estado==ready){
+			indice_final=indice;
+			libre=1;
+		}
 	}
+	vector_tareas[indice_inicio].sp=current_sp;
+	next_sp=vector_tareas[indice_final].sp;
+
+	MEF_tareas(indice);
+
 	return next_sp;
+}
+
+
+void schedule(void){
+	SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+	__ISB();
+	__DSB();
+}
+
+void SysTick_Handler(void){
+	schedule();
 }
 
 /*==================[external functions definition]==========================*/
 
 int main(void)
 {
+
+	NVIC_SetPriority(PendSV_IRQn,(1<<__NVIC_PRIO_BITS)-1);
+
 	init_stack(stack1,STACK_SIZE,&sp1,task1,(void *)0x11223344);
 	init_stack(stack2,STACK_SIZE,&sp2,task2,(void *)0x55667788);
+	init_stack(stack3,STACK_SIZE,&sp3,task3,(void *)0x11227788);
 
 	initHardware();
+
+	vector_tareas[1].sp=sp1;
+	vector_tareas[1].estado=ready;
+	vector_tareas[2].sp=sp2;
+	vector_tareas[2].estado=ready;
+	vector_tareas[3].sp=sp3;//idle
+	vector_tareas[3].estado=ready;
 
 	while (1)
 	{
