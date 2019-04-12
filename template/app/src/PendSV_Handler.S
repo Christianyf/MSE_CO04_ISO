@@ -34,43 +34,23 @@
  */
 	.syntax unified
 	.text
-	.global SysTick_Handler
-
-	//.extern sp1//para poder acceder a sp1 desde codigo c
+	.global PendSV_Handler
 	.extern get_next_context
 
 	.thumb_func
 
-SysTick_Handler:
+
+PendSV_Handler:
 	push {r4-r11,lr}
 
 	mrs r0, msp			//guardo el valor de msp actual(envio msp mediante r0)
 	bl get_next_context	//llamo a la funcion get_next_context
-
-	//msp a sp1
-	//ldr r0,=sp1			//r0=&sp1 (apunto a sp1)
-	//ldr r0,[r0]			//r0=sp1  (cargo el valor de sp1)
-
 	msr msp,r0			//msp es el stack pointer principal (cargo el siguiente sp devuelto por get_next_context)
 
 	pop {r4-r11,lr}
 return:
 	bx lr
-	/* otras alternativas para el retorno */
-	/* 1. mov pc,lr
-	/  2. bx lr */
-	/* pop {pc} */
-///////////////////////////////////////////////////
-//	.extern sp1
-//	push{r4-r11,lr}
-//	ldr r0,=sp1//r0=&sp1
-//	ldr r0,[r0]//r0=*r0
 
-//	msr msp,r0//msp=sp1
-
-//	push{r4-r11,lr}
-//return:
-//	bx lr
 
 
 
