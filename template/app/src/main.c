@@ -37,6 +37,8 @@
 #include "board.h"
 #include <strings.h>
 #include "os_core.h"
+#include "semaphore.h"
+#include "sapi.h"
 
 /*==================[macros and definitions]=================================*/
 #define DELAY_T1 0x500000
@@ -51,6 +53,7 @@ uint32_t stack3[STACK_SIZE/4];
 
 uint32_t sp1,sp2,sp3;
 
+uint32_t semaforo1;
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
@@ -63,11 +66,10 @@ void * task1(void *arg){
 	uint32_t i;
 
 	while(1){
+
 		t_delay(500);
-		//for(i=0;i<DELAY_T1;i++){
-			//delay por software basico
-		//}
 		Board_LED_Toggle(LED_1);
+		liberar_semaforo(semaforo1);
 	}
 	return NULL;
 }
@@ -75,24 +77,21 @@ void * task2(void *arg){
 	uint32_t i;
 
 	while(1){
+		tomar_semaforo(semaforo1);
 		t_delay(500);
-		//for(i=0;i<DELAY_T2;i++){
-			//delay por software basico
-		//}
-		Board_LED_Toggle(LED_2);
+		gpioToggle(LED2);
 	}
 	return NULL;
 }
-//Tarea 3 es mi tarea idle (nunca bloquear)
-
 void * task3(void *arg){
-	while(1){
+
+	float pi=3.1416;
+
+	while(pi!=0){
 		uint32_t i;
 		t_delay(500);
-		//for(i=0;i<DELAY_T2;i++){
-
-		//}
 		Board_LED_Toggle(LED_3);
+		pi*=1.1;
 	}
 	return NULL;
 }
@@ -104,22 +103,19 @@ int main(void)
 
 	NVIC_SetPriority(PendSV_IRQn,(1<<__NVIC_PRIO_BITS)-1);
 
-	//init_stack(stack1,STACK_SIZE,&sp1,task1,(void *)0x11223344);
-	//init_stack(stack2,STACK_SIZE,&sp2,task2,(void *)0x55667788);
-	//init_stack(stack3,STACK_SIZE,&sp3,task3,(void *)0x11227788);
-
 	iniciar_vtareas();
 
 	crear_tarea(stack1,task1,"tarea1",STACK_SIZE,1,(void *)0x11223344);
 	crear_tarea(stack2,task2,"tarea2",STACK_SIZE,1,(void *)0x11223344);
 	crear_tarea(stack3,task3,"tarea3",STACK_SIZE,1,(void *)0x11223344);
 
+	semaforo1=crear_semaforo_bin();
 
 	initHardware();
 
 	while (1)
 	{
-	__WFI(); //wfi
+	__WFI();
 	}
 }
 

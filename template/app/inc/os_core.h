@@ -36,8 +36,12 @@
 #include "board.h"
 /*==================[macros]=================================================*/
 #define STACK_SIZE 512
+#define NTAREAS_MAX 8//de cliente
+#define SEM_TOMADO 9
+#define SEM_LIBRE 1
 /*==================[typedef]================================================*/
-typedef  unsigned long int uint32_t;
+typedef unsigned long int uint32_t;
+typedef long int int32_t;
 typedef unsigned char uint8_t;
 typedef void *(*task_type)(void *);//puntero a función que devuelve un puntero y recibe
 								   //de parametro un puntero
@@ -50,7 +54,7 @@ typedef struct{
 	uint32_t sp;
 	uint32_t prioridad;
 	state estado;
-	uint32_t contador;
+	int32_t contador;
 	uint32_t id;
 }data_tarea;
 

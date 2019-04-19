@@ -55,4 +55,21 @@ out/app/src/main.o: app/src/main.c app/inc/main.h \
  lib/lpc_chip_43xx/inc/iap_18xx_43xx.h lib/lpc_chip_43xx/inc/error.h \
  lib/lpc_chip_43xx/inc/i2cm_18xx_43xx.h lib/lpc_chip_43xx/inc/fpu_init.h \
  lib/lpc_board_ciaa_edu_4337/inc/board_api.h \
- lib/lpc_chip_43xx/inc/lpc_types.h
+ lib/lpc_chip_43xx/inc/lpc_types.h app/inc/os_core.h app/inc/semaphore.h \
+ app/inc/os_core.h lib/sapi_rtos/inc/sapi.h \
+ lib/sapi_rtos/inc/sapi_datatypes.h \
+ lib/sapi_rtos/inc/sapi_peripheral_map.h lib/sapi_rtos/inc/sapi_board.h \
+ lib/sapi_rtos/inc/sapi_gpio.h lib/sapi_rtos/inc/sapi_uart.h \
+ lib/sapi_rtos/inc/sapi_delay.h lib/sapi_rtos/inc/sapi_adc.h \
+ lib/sapi_rtos/inc/sapi_dac.h lib/sapi_rtos/inc/sapi_i2c.h \
+ lib/sapi_rtos/inc/sapi_rtc.h lib/sapi_rtos/inc/sapi_sleep.h \
+ lib/sapi_rtos/inc/sapi_cyclesCounter.h lib/sapi_rtos/inc/sapi_stdio.h \
+ lib/sapi_rtos/inc/sapi.h lib/sapi_rtos/inc/sapi_print.h \
+ lib/sapi_rtos/inc/sapi_convert.h lib/sapi_rtos/inc/sapi_debugPrint.h \
+ lib/sapi_rtos/inc/sapi_consolePrint.h \
+ lib/sapi_rtos/inc/sapi_circularBuffer.h \
+ lib/sapi_rtos/inc/sapi_7_segment_display.h \
+ lib/sapi_rtos/inc/sapi_keypad.h lib/sapi_rtos/inc/sapi_dht11.h \
+ lib/sapi_rtos/inc/sapi_esp8266.h lib/sapi_rtos/inc/sapi_lcd.h \
+ lib/sapi_rtos/inc/sapi_magnetometer_hmc5883l.h \
+ lib/sapi_rtos/inc/sapi_magnetometer_qmc5883l.h
