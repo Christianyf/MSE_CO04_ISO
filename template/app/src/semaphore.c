@@ -61,7 +61,7 @@ uint32_t crear_semaforo_bin(void){
 		indice_vec_semaforo++;
 		return id;
 	}else{
-		//error no se puede crear el semaforo
+		//error no se puede crear el semáforo
 		return MAX_SEMAFORO;
 	}
 
@@ -77,7 +77,7 @@ uint32_t crear_mutex(void){
 		indice_vec_mutex++;
 		return id;
 	}else{
-		//error no se puede crear el semaforo
+		//error no se puede crear el semáforo
 		return MAX_SEMAFORO;
 	}
 

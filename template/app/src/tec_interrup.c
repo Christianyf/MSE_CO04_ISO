@@ -1,7 +1,5 @@
-/* Copyright 2018
+/* Copyright 2019
  * All rights reserved.
- *
- * This file is part of arquitecturaDeMicroprocesadores.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,7 +47,7 @@ estado_sec estado_secuencia=NINGUNO;
 /*==================[internal data definition]===============================*/
 
 /*==================[external data definition]===============================*/
-extern uint32_t semaforo1;
+//extern uint32_t semaforo1;
 extern uint32_t semaforo2;
 /*==================[internal functions definition]==========================*/
 void ConfiguracionInterrupciones(uint8_t canal,uint8_t puerto,uint8_t pin,LPC43XX_IRQn_Type IRQn_Tipo,uint8_t prioridad,uint8_t flanco)
@@ -81,7 +79,6 @@ void ConfiguracionInterrupciones(uint8_t canal,uint8_t puerto,uint8_t pin,LPC43X
 
 void GPIO0_IRQHandler(void){
 	Board_LED_Toggle(LED_1);
-	//liberar_semaforo(semaforo1);
 	Chip_PININT_ClearIntStatus( LPC_GPIO_PIN_INT, PININTCH( 0 ) );
 	Chip_PININT_ClearRiseStates( LPC_GPIO_PIN_INT, PININTCH( 0 ));
 	Chip_PININT_ClearFallStates(LPC_GPIO_PIN_INT, PININTCH( 0 ));
@@ -91,24 +88,14 @@ void GPIO0_IRQHandler(void){
 
 void GPIO1_IRQHandler(void){
 	Board_LED_Toggle(LED_2);
-	//liberar_semaforo(semaforo1);
 	Chip_PININT_ClearIntStatus( LPC_GPIO_PIN_INT, PININTCH( 1 ) );
 }
 
 void MEF_tecla(tecla *tec){
-	//estado_tec estado;
 	s_delay(250000);
-	/*if(gpioRead( tec->gpiotec )==OFF)
-	   {
-			estado=FALLING;
-			//tec->estado=DOWN;
-	   }else if(gpioRead( tec->gpiotec )==ON){
-		   estado=UP;
-		   //tec->estado=UP;
-	   }*/
+
 	switch(tec->estado ){
 	case UP:
-		//s_delay(500000);
 		if(gpioRead(tec->gpiotec)==ON){
 			tec->estado=UP;
 		}else{
@@ -123,7 +110,6 @@ void MEF_tecla(tecla *tec){
 			}
 			break;
 	case DOWN:
-		//s_delay(500000);
 		if(gpioRead(tec->gpiotec)==ON){
 			tec->estado=RISING;
 		}else{
@@ -170,7 +156,6 @@ void MEF_secuencia(tecla * tec){
 	case SEC3:
 		if(tec->estado==RISING){
 			estado_secuencia=NINGUNO;
-			//Board_LED_Toggle(LED_3);
 			liberar_semaforo(semaforo2);
 		}else{
 			estado_secuencia=NINGUNO;

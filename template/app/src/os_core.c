@@ -84,7 +84,7 @@ void schedule(void){
 void SysTick_Handler(void){
 	actualizar_cuenta();					//actualiza los contadores de los delays
 	timer_sistema++;						//contador del sistema
-	if(timer_1>0){
+	if(timer_1>0){							//actualización del contador de encendido de los leds
 		timer_1--;
 	}else timer_1=0;
 	schedule();
@@ -408,7 +408,7 @@ uint32_t crear_tarea(
 		if(cont_uno<MAX_VECTOR_SIZE-1){
 			cont_uno++;
 		}else{
-			//err se pasa del numero maximo del vector
+			//err se pasa del número maximo del vector
 		}
 		break;
 	case 2:
@@ -421,7 +421,7 @@ uint32_t crear_tarea(
 		if(cont_dos<MAX_VECTOR_SIZE-1){
 			cont_dos++;
 		}else{
-			//err se pasa del numero maximo del vector
+			//err se pasa del número maximo del vector
 		}
 		break;
 	case 3:
@@ -435,7 +435,7 @@ uint32_t crear_tarea(
 		if(cont_tres<MAX_VECTOR_SIZE-1){
 			cont_tres++;
 		}else{
-			//err se pasa del numero maximo del vector
+			//err se pasa del número maximo del vector
 		}
 
 		break;
@@ -450,10 +450,7 @@ void * task_idle(void *arg){
 	uint32_t i;
 
 	while(1){
-		/*for(i=0;i<500000;i++){
-			//delay por software basico
-		}
-		Board_LED_Toggle(LED_BLUE);*/
+		__WFI();
 	}
 	return NULL;
 }

@@ -61,8 +61,8 @@ uint32_t semaforo2;
 
 uint32_t mutex1;
 
-tecla tecla1={UP,TEC2};
-tecla tecla2={UP,TEC3};
+tecla tecla1={UP,TEC1};
+tecla tecla2={UP,TEC2};
 
 uint32_t time_tec=0;
 uint32_t flag=0;
@@ -81,6 +81,8 @@ void imprimir_datos(uint32_t t,uint32_t t1,uint32_t t2);
 /*==================[internal functions definition]==========================*/
 
 void * task1(void *arg){
+	/*Tarea encargada del barrido de teclas y validación de secuencias*/
+
 	uint32_t i;
 
 	while(1){
@@ -112,11 +114,14 @@ void * task1(void *arg){
 	return NULL;
 }
 void * task2(void *arg){
+	/*Tarea encargada del encendido de leds según la secuencia detectada*/
 
 	uint32_t caso,t1,t2;
 
 	while(1){
 		if(tomar_semaforo(semaforo2)==1){
+
+			tomar_mutex(mutex1);
 
 			if(tecla1.t_falling<tecla2.t_falling && tecla1.t_rising<tecla2.t_rising){
 				caso=1;
