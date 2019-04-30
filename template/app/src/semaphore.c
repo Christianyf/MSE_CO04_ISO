@@ -42,11 +42,12 @@
 
 /*==================[internal data declaration]==============================*/
 semaforo vector_semaforos[MAX_SEMAFORO];
-
+mutex vector_mutex[MAX_SEMAFORO];
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
 uint32_t indice_vec_semaforo=0;
+uint32_t indice_vec_mutex=0;
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
@@ -66,7 +67,23 @@ uint32_t crear_semaforo_bin(void){
 
 }
 
-void tomar_semaforo(uint32_t id_semaforo){
+uint32_t crear_mutex(void){
+	uint32_t id;
+
+	if(indice_vec_mutex<MAX_SEMAFORO){
+		vector_mutex[indice_vec_mutex].estado=libre_m;
+		vector_mutex[indice_vec_mutex].id=indice_vec_mutex;
+		id=indice_vec_mutex;
+		indice_vec_mutex++;
+		return id;
+	}else{
+		//error no se puede crear el semaforo
+		return MAX_SEMAFORO;
+	}
+
+}
+
+uint32_t tomar_semaforo(uint32_t id_semaforo){
 
 	uint32_t prioridad,id;
 	prioridad=vector_cambio[0].prioridad;
@@ -94,14 +111,60 @@ void tomar_semaforo(uint32_t id_semaforo){
 			break;
 		}
 		schedule();
+		return 0;
 		break;
 	case libre:
 		vector_semaforos[id_semaforo].estado=tomado;
 		vector_semaforos[id_semaforo].id_tarea_tomada=id;
 		vector_semaforos[id_semaforo].prioridad_tarea_tomada=prioridad;
-
+		return 1;
 		break;
 	default:
+		return 3;
+		break;
+	}
+
+}
+
+
+uint32_t tomar_mutex(uint32_t id_mutex){
+
+	uint32_t prioridad,id;
+	prioridad=vector_cambio[0].prioridad;
+	id=vector_cambio[0].id;
+
+	switch(vector_mutex[id_mutex].estado){
+	case tomado_m:
+		vector_mutex[id_mutex].id_tarea_tomada=id;
+		vector_mutex[id_mutex].prioridad_tarea_tomada=prioridad;
+
+		switch(prioridad){
+		case 1:
+			vector_p1[id].estado=blocked;
+			vector_p1[id].contador=-1;
+			break;
+		case 2:
+			vector_p2[id].estado=blocked;
+			vector_p2[id].contador=-1;
+			break;
+		case 3:
+			vector_p3[id].estado=blocked;
+			vector_p3[id].contador=-1;
+			break;
+		default:
+			break;
+		}
+		schedule();
+		return 0;
+		break;
+	case libre_m:
+		vector_mutex[id_mutex].estado=tomado_m;
+		vector_mutex[id_mutex].id_tarea_tomada=id;
+		vector_mutex[id_mutex].prioridad_tarea_tomada=prioridad;
+		return 1;
+		break;
+	default:
+		return 3;
 		break;
 	}
 
@@ -115,6 +178,35 @@ uint32_t liberar_semaforo(uint32_t id_semaforo){
 
 	prioridad=vector_semaforos[id_semaforo].prioridad_tarea_tomada;
 	id=vector_semaforos[id_semaforo].id_tarea_tomada;
+
+	switch(prioridad){
+	case 1:
+		vector_p1[id].estado=ready;
+		vector_p1[id].contador=0;
+		break;
+	case 2:
+		vector_p2[id].estado=ready;
+		vector_p2[id].contador=0;
+		break;
+	case 3:
+		vector_p3[id].estado=ready;
+		vector_p3[id].contador=0;
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+uint32_t liberar_mutex(uint32_t id_mutex){
+	uint32_t prioridad,id;
+
+
+	vector_mutex[id_mutex].estado=libre_m;
+
+	prioridad=vector_mutex[id_mutex].prioridad_tarea_tomada;
+	id=vector_mutex[id_mutex].id_tarea_tomada;
 
 	switch(prioridad){
 	case 1:

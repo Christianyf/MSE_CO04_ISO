@@ -39,12 +39,21 @@
 #define MAX_SEMAFORO 5
 /*==================[typedef]================================================*/
 typedef enum estado_s{tomado,libre,no_operativo}estado_semaforo;
+
+typedef enum estado_m{libre_m,tomado_m}estado_mutex;
+
 typedef struct{
 	uint32_t id;
 	estado_semaforo estado;
 	uint32_t prioridad_tarea_tomada;
 	uint32_t id_tarea_tomada;
 }semaforo;
+typedef struct{
+	uint32_t id;
+	estado_mutex estado;
+	uint32_t prioridad_tarea_tomada;
+	uint32_t id_tarea_tomada;
+}mutex;
 /*==================[external data declaration]==============================*/
 
 extern data_tarea vector_p1[5];
@@ -55,8 +64,12 @@ extern data_tarea vector_cambio[2];
 
 /*==================[external functions declaration]=========================*/
 uint32_t crear_semaforo_bin(void);
-void tomar_semaforo(uint32_t id_semaforo);
+uint32_t tomar_semaforo(uint32_t id_semaforo);
 uint32_t liberar_semaforo(uint32_t id_semaforo);
+
+uint32_t crear_mutex(void);
+uint32_t tomar_mutex(uint32_t id_mutex);
+uint32_t liberar_mutex(uint32_t id_mutex);
 
 /*==================[end of file]============================================*/
 #endif /* #ifndef _SEMAPHORE_H_ */

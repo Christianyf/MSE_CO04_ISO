@@ -42,9 +42,9 @@
 
 PendSV_Handler:
 	//-----Contexto FPU-----
-	tst lr,0x10			//lr (EXc_RETURN) and 0x10 comparación
-	it eq				//si el resultado es igual a cero
-	vpusheq {s16-s31}	//pusheo s16 a s32 a la pila fuerzo al staking s0-s15 fpscr
+	//tst lr,0x10			//lr (EXc_RETURN) and 0x10 comparación
+	//it eq				//si el resultado es igual a cero
+	//vpusheq {s16-s31}	//pusheo s16 a s32 a la pila fuerzo al staking s0-s15 fpscr
 	//----------------------
 	push {r4-r11,lr}
 
@@ -55,9 +55,9 @@ PendSV_Handler:
 	pop {r4-r11,lr}
 
 	//----- Contexto FPU-----
-	tst lr,0x10
-	it eq
-	vpopeq {s16-s31}
+	//tst lr,0x10
+	//it eq
+	//vpopeq {s16-s31}
 return:
 	bx lr
 

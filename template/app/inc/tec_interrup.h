@@ -29,75 +29,48 @@
  *
  */
 
-#ifndef _OS_CORE_H_
-#define _OS_CORE_H_
+#ifndef _TEC_INTERRUP_H_
+#define _TEC_INTERRUP_H_
 
 /*==================[inclusions]=============================================*/
 #include "board.h"
+#include "os_core.h"
+#include "sapi.h"
 /*==================[macros]=================================================*/
-#define STACK_SIZE 512
-#define NTAREAS_MAX 8//de cliente
-#define SEM_TOMADO 9
-#define SEM_LIBRE 1
+#define	TEC1_CANAL		0
+#define	TEC1_PUERTO		0
+#define	TEC1_PIN		4
+#define	TEC1_FLANCO		3
+#define TEC1_IRQn_TIPO	PIN_INT0_IRQn
+
+#define PRIORIDAD		4
+#define FLANCOSUBIDA	1
+#define FLANCOBAJADA	2
+#define FLANCOS			3
+
+#define	TEC2_CANAL		1
+#define	TEC2_PUERTO		0
+#define	TEC2_PIN		8
+#define	TEC2_FLANCO		3
+#define TEC2_IRQn_TIPO	PIN_INT1_IRQn
 /*==================[typedef]================================================*/
-typedef unsigned long int uint32_t;
-typedef long int int32_t;
-typedef unsigned char uint8_t;
-typedef void *(*task_type)(void *);//puntero a función que devuelve un puntero y recibe
-								   //de parametro un puntero
-typedef uint32_t s_timer;
-
-typedef enum state_task{ready,running,blocked,suspended}state;
-typedef enum priori{alta,media,baja,idle}prioridad;
-
+typedef enum{UP,FALLING,DOWN,RISING}estado_tec;
+typedef enum{NINGUNO,SEC1,SEC2,SEC3}estado_sec;
 typedef struct{
-	uint32_t tamano;
-	uint32_t sp;
-	uint32_t prioridad;
-	state estado;
-	int32_t contador;
-	uint32_t id;
-}data_tarea;
-
+	estado_tec estado;
+	gpioMap_t gpiotec;
+	uint32_t t_falling;
+	uint32_t t_rising;
+}tecla;
 /*==================[external data declaration]==============================*/
-
-extern uint32_t sp1,sp2,sp3;
-
-extern uint32_t stack1[512/4];
-extern uint32_t stack2[512/4];
-extern uint32_t stack3[512/4];
-
-extern s_timer timer_sistema;
-extern s_timer timer_1;
+extern tecla tecla1;
+extern tecla tecla2;
 /*==================[external functions declaration]=========================*/
-void initHardware(void);
-void task_return_hook(void * ret_val);
-void schedule(void);
-void SysTick_Handler(void);
-void t_delay(uint32_t tiempo);
-void s_delay(uint32_t tiempo);
-void actualizar_cuenta(void);
-void MEF_tareas(uint32_t prio,uint32_t ind);
-void iniciar_vtareas(void);
-uint32_t get_next_context(uint32_t current_sp);
-
-uint32_t selec_prioridad(void);
-void actualizar_vInicio(uint32_t id,uint32_t prioridad);
-
-void init_stack(
-		uint32_t stack[],
-		uint32_t stack_size,
-		uint32_t * sp,
-		task_type entry_point,
-		void * arg);
-
-uint32_t crear_tarea(
-		uint32_t stack[],
-		task_type p_tarea,
-		const char *const nombre,
-		uint32_t size,
-		uint32_t prioridad,
-		void* arg);
-
+void ConfiguracionInterrupciones(uint8_t canal,uint8_t puerto,uint8_t pin,LPC43XX_IRQn_Type IRQn_Tipo,uint8_t prioridad,uint8_t flanco);
+void GPIO0_IRQHandler(void);
+void GPIO1_IRQHandler(void);
+void MEF_tecla(tecla * tec);
+void MEF_secuencia(tecla * tec);
+char* itoa(int value, char* result, int base);
 /*==================[end of file]============================================*/
-#endif /* #ifndef _OS_CORE_H_ */
+#endif /* #ifndef _TEC_INTERRUP_H_ */

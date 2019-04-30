@@ -57,6 +57,7 @@ uint32_t cont_uno=0,cont_dos=0,cont_tres=0;
 prioridad cont_prioridad=alta;
 uint32_t stack0[STACK_SIZE/4];
 uint32_t sp0;
+
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
@@ -82,6 +83,10 @@ void schedule(void){
 
 void SysTick_Handler(void){
 	actualizar_cuenta();					//actualiza los contadores de los delays
+	timer_sistema++;						//contador del sistema
+	if(timer_1>0){
+		timer_1--;
+	}else timer_1=0;
 	schedule();
 }
 
@@ -445,10 +450,10 @@ void * task_idle(void *arg){
 	uint32_t i;
 
 	while(1){
-		for(i=0;i<500000;i++){
+		/*for(i=0;i<500000;i++){
 			//delay por software basico
 		}
-		Board_LED_Toggle(LED_BLUE);
+		Board_LED_Toggle(LED_BLUE);*/
 	}
 	return NULL;
 }
@@ -548,6 +553,14 @@ void actualizar_vInicio(uint32_t id,uint32_t prioridad){
 		break;
 	}
 
+}
+
+void s_delay(uint32_t tiempo){
+	uint32_t i;
+
+	for(i=0;i<tiempo;i++){
+
+	}
 }
 /*==================[external functions definition]==========================*/
 
